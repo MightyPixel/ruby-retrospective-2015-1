@@ -11,15 +11,13 @@ class RationalSequence
 
     while @rationals.count < @limit
       next_rational_number = Rational(numerator, denominator)
-      if !@rationals.include? next_rational_number
+      unless @rationals.include? next_rational_number
         @rationals.push(next_rational_number)
         yield next_rational_number
       end
 
       iteration = iterate_rational(direction, numerator, denominator)
-      direction = iteration[0]
-      numerator = iteration[1]
-      denominator = iteration[2]
+      direction, numerator, denominator = iteration
     end
   end
 
@@ -27,21 +25,11 @@ class RationalSequence
 
   def iterate_rational(direction, numerator, denominator)
     if direction == 1
-      if denominator == 1
-        numerator += 1
-        direction *= -1
-      else
-        numerator += 1
-        denominator -= 1
-      end
+      numerator += 1
+      denominator > 1 ? denominator -= 1 : direction *= -1
     else
-      if numerator == 1
-        denominator += 1
-        direction *= -1
-      else
-        numerator -= 1
-        denominator += 1
-      end
+      denominator += 1
+      numerator > 1 ? numerator -= 1 : direction *= -1
     end
 
     return direction, numerator, denominator
@@ -58,11 +46,11 @@ class FibonacciSequence
   end
 
   def each
-    current, previous = @first, 0
+    current, following = @first, @second
 
-    while current <= @limit
+    (0...@limit).each do
       yield current
-      current, previous = current + previous, current
+      current, following = following, current + following
     end
   end
 end
