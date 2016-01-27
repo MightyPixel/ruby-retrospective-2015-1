@@ -31,7 +31,6 @@ def new_food(food, snake, dimensions)
   (all_spaces - taken_spaces).sample
 end
 
-
 def obstacle_ahead?(snake, direction, dimensions)
   next_head = move_segment(snake[-1], direction)
 
