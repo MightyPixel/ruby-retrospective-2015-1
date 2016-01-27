@@ -1,4 +1,4 @@
-SUITES = [:spades, :hearts, :diamonds, :clubs]
+SUITES = [:clubs, :diamonds, :hearts, :spades]
 RANKS = [2, 3, 4, 5, 6, 7, 8, 9, 10, :jack, :queen, :king, :ace]
 BELOTE_RANKS = [7, 8, 9, :jack, :queen, :king, 10, :ace]
 SIXTY_SIX_RANKS = [9, :jack, :queen, :king, 10, :ace]
@@ -63,8 +63,8 @@ end
 class BeloteHand < Hand
   def highest_of_suit(suit)
     cards_of_suit = @cards.select {|card| card.suit == suit}
-    cards_of_suit.max {
-      |a,b| BELOTE_RANKS.find_index(a) <=> BELOTE_RANKS.find_index(b)
+    cards_of_suit.max_by {
+      |card| BELOTE_RANKS.find_index(card.rank)
     }
   end
 
@@ -168,7 +168,7 @@ class Deck
   end
 
   def deal
-    get_hand(get_hand_size.times.collect { draw_top_card() })
+    hand(hand_size.times.collect { draw_top_card() })
   end
 
   def to_s
@@ -176,50 +176,55 @@ class Deck
   end
 
   protected
-  def get_hand_size
-    1
-  end
-  def get_hand(cards)
+  def hand(cards)
     Hand.new(cards)
   end
 
   def compare_cards(card, other_card)
-    ranks = ranks_order
-
-    card_suit_value = SUITES.find_index(card.suit)
-    other_card_suit_value = SUITES.find_index(other_card.suit)
-
-    card_rank_value = ranks.find_index(card.rank)
-    other_rank_suit_value = ranks.find_index(other_card.rank)
-
-    suit_diff = other_card_suit_value - card_suit_value
-    rank_diff = other_rank_suit_value - card_rank_value
-    suit_diff != 0 ? suit_diff : rank_diff
+    suit_diff = compare_suits(card, other_card)
+    suit_diff != 0 ? suit_diff : compare_ranks(card, other_card)
   end
 
   def ranks_order
     RANKS.clone
   end
+
+  private
+
+  def compare_suits(first_card, second_card)
+    first_card_suit_value = SUITES.find_index(first_card.suit)
+    second_card_suit_value = SUITES.find_index(second_card.suit)
+
+    second_card_suit_value <=> first_card_suit_value
+  end
+
+  def compare_ranks(first_card, second_card)
+    ranks = ranks_order
+    first_card_rank_value = ranks.find_index(first_card.rank)
+    second_card_rank_value = ranks.find_index(second_card.rank)
+
+    second_card_rank_value <=> first_card_rank_value
+  end
 end
 
 class WarDeck < Deck
   protected
-  def get_hand_size
+  def hand_size
     return 26
   end
 
-  def get_hand(cards)
+  def hand(cards)
     WarHand.new(cards)
   end
 end
 
 class BeloteDeck < Deck
   protected
-  def get_hand_size
+  def hand_size
     return 8
   end
 
-  def get_hand(cards)
+  def hand(cards)
     BeloteHand.new(cards)
   end
 
@@ -230,11 +235,11 @@ end
 
 class SixtySixDeck < Deck
   protected
-  def get_hand_size
+  def hand_size
     return 6
   end
 
-  def get_hand(cards)
+  def hand(cards)
     SixtySixHand.new(cards)
   end
 
